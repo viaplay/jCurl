@@ -8,9 +8,11 @@ import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.httpclient.util.DateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,6 +21,20 @@ import org.slf4j.LoggerFactory;
  * intended to be used as a web server serving data. The sole purpose of this class is to be able to test web services
  * without the need of a web server, application server, web container and that complex stuff. This is plain Java JRE
  * stuff!
+ * <p>
+ * In the source of this class you will find the possible 'pages' that you can request. 
+ * You can also instantiate and start the server and use your browser to go to the default page http://localhost:1989 
+ * and there read about the available pages. There it is also possible to click on each page and see the response.
+ * <p>
+ * Each page are delivered with a set of cookies so that can be tested as well. These are: 
+ * <ul>
+ * <li><b>SimpleCookie</b> with value SimpleCookieValue</li>
+ * <li><b>NotExpiredCookie</b> with value NotExpiredCookieValue and the expires date set to tomorrow at current time.</li>
+ * <li><b>OutdatedCookie</b> with value OutdatedCookieValue and the expires date set to yesterday at current time.</li>
+ * <li><b>YourCookie</b> with value YourCookieValue with Path set to / and Domain set to <code>localhost</code>.</li>
+ * <li><b>YourCookieTestCookie</b> with value YourCookieTestCookieValue with Path set to /cookietest/ and Domain set to <code>localhost</code>.</li>
+ * <li><b>NotYourCookie</b> with value NotYourCookieValue with Path set to / and Domain set to <code>.yourdomain.not</code>.</li>
+ * </ul>
  * 
  * @author mikael.p.larsson@afconsult.com
  * 
@@ -27,38 +43,10 @@ public class MicroHTTPServer implements Runnable {
 	private Logger log = LoggerFactory.getLogger(MicroHTTPServer.class);
 	private static final String version = "1.0";
 
-	private static final Map<String, String> pages = new HashMap<String, String>();
+	private Map<String, String> pages = new HashMap<String, String>();
 	private static final Map<Integer, String> responseCodes = new HashMap<Integer, String>();
 
 	static {
-		pages.put(
-				"",
-				"200|text/html|<html><head><style>a{display:block;width:150px;}</style></head><body><h1>It works!</h1><p>You have succeeded to connect to MicroHTTPServer!</p><p>Congratulations!</p>"
-						+ "<h3>These are the pages that can be used:</h3>"
-						+ "<ul>"
-						+ "<li><a href=\"create\">create</a><i>Returns 201 Created</i></li>"
-						+ "<li><a href=\"delete\">delete</a><i>Returns 200 OK</i></li>"
-						+ "<li><a href=\"put\">put</a><i>Returns 201 Created</i></li>"
-						+ "<li><a href=\"post\">post</a><i>Returns 201 Created</i></li>"
-						+ "<li><a href=\"head\">head</a><i>Returns 200 OK</i></li>"
-						+ "<li><a href=\"old\">old</a><i>Returns 304 Not Modified</i></li>"
-						+ "<li><a href=\"bad\">bad</a><i>Returns 400 Bad Request</i></li>"
-						+ "<li><a href=\"authenticate\">authenticate</a><i>Returns 403 Forbidden</i></li>"
-						+ "<li><a href=\"missing\">missing</a><i>Returns 404 Not Found</i></li>"
-						+ "<li><a href=\"error\">error</a><i>Returns 500 Internal Server Error</i></li>" + "</ul>");
-		pages.put("index.html",
-				"200|text/html|<h1>It works!</h1><p>You have succeeded to connect to MicroHTTPServer!</p><p>Congratulations!</p>");
-		pages.put("create", "201|application/json|{\"ok\":true}");
-		pages.put("delete", "200|application/json|{\"ok\":true}");
-		pages.put("put", "201|application/json|{\"ok\":true}");
-		pages.put("post", "201|application/json|{\"ok\":true}");
-		pages.put("head", "200|application/json|{\"ok\":true}");
-		pages.put("old", "304|text/html|<h1>Same old, same old</h1>");
-		pages.put("bad", "400|text/plain;charset=utf-8|");
-		pages.put("authenticate", "403|text/plain;charset=utf-8|");
-		pages.put("missing",
-				"404|text/html|<h1>404 Not Found</h1><p>The page you are requesting cannot be found!</p><p>Please try again!</p>");
-		pages.put("error", "500|text/plain;charset=utf-8|");
 		responseCodes.put(200, "OK");
 		responseCodes.put(201, "Created");
 		responseCodes.put(304, "Not Modified");
@@ -73,8 +61,46 @@ public class MicroHTTPServer implements Runnable {
 	private boolean serverStillUp = true;
 	private ServerSocket serverSocket = null;
 	private Thread serverThread = null;
+	
+	private Map<String, String> initializePages() {
+		Map<String, String> pages = new HashMap<String, String>();
+		pages.put(
+				"",
+				"200|text/html|<html><head><style>a{display:block;width:150px;}</style></head><body><h1>It works!</h1><p>You have succeeded to connect to MicroHTTPServer!</p><p>Congratulations!</p>"
+						+ "<h3>These are the pages that can be used:</h3>"
+						+ "<ul>"
+						+ "<li><a href=\"/cookietest/index.html\">/cookietest/index.html</a><i>Returns 200 Created and your cookie with path /cookietest/.</i></li>"
+						+ "<li><a href=\"create\">create</a><i>Returns 201 Created</i></li>"
+						+ "<li><a href=\"delete\">delete</a><i>Returns 200 OK</i></li>"
+						+ "<li><a href=\"put\">put</a><i>Returns 201 Created</i></li>"
+						+ "<li><a href=\"post\">post</a><i>Returns 201 Created</i></li>"
+						+ "<li><a href=\"head\">head</a><i>Returns 200 OK</i></li>"
+						+ "<li><a href=\"old\">old</a><i>Returns 304 Not Modified</i></li>"
+						+ "<li><a href=\"bad\">bad</a><i>Returns 400 Bad Request</i></li>"
+						+ "<li><a href=\"authenticate\">authenticate</a><i>Returns 403 Forbidden</i></li>"
+						+ "<li><a href=\"missing\">missing</a><i>Returns 404 Not Found</i></li>"
+						+ "<li><a href=\"error\">error</a><i>Returns 500 Internal Server Error</i></li>" + "</ul>");
+		pages.put("index.html",
+				"200|text/html|<h1>It works!</h1><p>You have succeeded to connect to MicroHTTPServer!</p><p>Congratulations!</p>");
+		pages.put("cookietest/index.html",
+				"200|text/html|<h1>It works!</h1><p>You have succeeded to connect to the MicroHTTPServer cookietest page!</p><p>Congratulations!</p>");
+		pages.put("create", "201|application/json|{\"ok\":true}");
+		pages.put("delete", "200|application/json|{\"ok\":true}");
+		pages.put("put", "201|application/json|{\"ok\":true}");
+		pages.put("post", "201|application/json|{\"ok\":true}");
+		pages.put("head", "200|application/json|{\"ok\":true}");
+		pages.put("old", "304|text/html|<h1>Same old, same old</h1>");
+		pages.put("bad", "400|text/plain;charset=utf-8|");
+		pages.put("authenticate", "403|text/plain;charset=utf-8|");
+		pages.put("missing",
+				"404|text/html|<h1>404 Not Found</h1><p>The page you are requesting cannot be found!</p><p>Please try again!</p>");
+		pages.put("error", "500|text/plain;charset=utf-8|");
+		
+		return pages;
+	}
 
 	public MicroHTTPServer() {
+		pages = initializePages();
 	}
 
 	/**
@@ -94,6 +120,10 @@ public class MicroHTTPServer implements Runnable {
 	 */
 	public void setTimeoutMillis(int timeOutMillis) {
 		this.timeoutMillis = timeOutMillis;
+	}
+	
+	public Map<String, String> getPagesMap() {
+		return pages;
 	}
 
 	/**
@@ -244,6 +274,11 @@ public class MicroHTTPServer implements Runnable {
 	 * @throws IOException In case of something goes wrong.
 	 */
 	private void writeResponse(String urlAsString, String method, BufferedWriter out) throws IOException {
+		Calendar tomorrow = Calendar.getInstance();
+		tomorrow.roll(Calendar.DAY_OF_YEAR, true);
+		Calendar yesterday = Calendar.getInstance();
+		yesterday.roll(Calendar.DAY_OF_YEAR, false);
+		
 		String pageData = pages.get(urlAsString.substring(1));
 		if (pageData == null) {
 			pageData = pages.get("missing");
@@ -258,6 +293,12 @@ public class MicroHTTPServer implements Runnable {
 		out.write(String.format("Server: %s/%s\r\n", this.getClass().getSimpleName(), version));
 		out.write(String.format("Content-Type: %s\r\n", contentType));
 		out.write(String.format("Content-Length: %s\r\n", page.length()));
+		out.write(String.format("Set-Cookie: %s\r\n", "SimpleCookie=SimpleCookieValue"));
+		out.write(String.format("Set-Cookie: NotExpiredCookie=NotExpiredCookieValue; Expires=%s; \r\n", DateUtil.formatDate(tomorrow.getTime())));
+		out.write(String.format("Set-Cookie: OutdatedCookie=OutdatedCookieValue; Expires=%s; \r\n", DateUtil.formatDate(yesterday.getTime())));
+		out.write(String.format("Set-Cookie: YourCookie=YourCookieValue; Path=%s; Domain=%s;\r\n", "/", "localhost"));
+		out.write(String.format("Set-Cookie: YourCookieTestCookie=YourCookieTestCookieValue; Path=%s; Domain=%s;\r\n", "/cookietest/", "localhost"));
+		out.write(String.format("Set-Cookie: NotYourCookie=NotYourCookieValue; Path=/; Domain=.yourdomain.not;\r\n"));
 		out.write("\r\n");
 		if (!"HEAD".equals(method)) {
 			out.write(page);

@@ -43,6 +43,11 @@ public class JCurl {
 		return head(request);
 	}
 
+	public static JCurlResponse head(String urlAsString, JCurlCookieManager jCurlCookieManager) {
+		JCurlRequest request = new JCurlRequest(urlAsString, jCurlCookieManager);
+		return head(request);
+	}
+
 	/**
 	 * The head request does only fetch the status of an resource without transmitting any pay-load.
 	 * 
@@ -52,6 +57,15 @@ public class JCurl {
 	 */
 	public static JCurlResponse head(JCurlRequest request) {
 		JCurlResponse response = new JCurlResponse();
+		request.setMethod(JCurlRequest.HEAD);
+		request.setPayload(null);
+		doHttpCall(request, response);
+		return response;
+	}
+
+	public static JCurlResponse head(JCurlRequest request, JCurlCookieManager jCurlCookieManager) {
+		request.setCookieManager(jCurlCookieManager);
+		JCurlResponse response = new JCurlResponse(jCurlCookieManager);
 		request.setMethod(JCurlRequest.HEAD);
 		request.setPayload(null);
 		doHttpCall(request, response);
@@ -71,6 +85,11 @@ public class JCurl {
 		return get(request);
 	}
 
+	public static JCurlResponse get(String urlAsString, JCurlCookieManager jCurlCookieManager) {
+		JCurlRequest request = new JCurlRequest(urlAsString);
+		return get(request, jCurlCookieManager);
+	}
+
 	/**
 	 * The get request is the type of request that a web browser does when it fetches a web page and other resources
 	 * like an image.
@@ -81,6 +100,14 @@ public class JCurl {
 	 */
 	public static JCurlResponse get(JCurlRequest request) {
 		JCurlResponse response = new JCurlResponse();
+		request.setPayload(null);
+		doHttpCall(request, response);
+		return response;
+	}
+
+	public static JCurlResponse get(JCurlRequest request, JCurlCookieManager jCurlCookieManager) {
+		request.setCookieManager(jCurlCookieManager);
+		JCurlResponse response = new JCurlResponse(jCurlCookieManager);
 		request.setPayload(null);
 		doHttpCall(request, response);
 		return response;
@@ -100,6 +127,12 @@ public class JCurl {
 		return put(request);
 	}
 
+	public static JCurlResponse put(String urlAsString, String payload, JCurlCookieManager jCurlCookieManager) {
+		JCurlRequest request = new JCurlRequest(urlAsString);
+		request.setPayload(payload);
+		return put(request, jCurlCookieManager);
+	}
+
 	/**
 	 * The put request is an important request when dealing with RESTful web services.
 	 * 
@@ -109,6 +142,14 @@ public class JCurl {
 	 */
 	public static JCurlResponse put(JCurlRequest request) {
 		JCurlResponse response = new JCurlResponse();
+		request.setMethod(JCurlRequest.PUT);
+		doHttpCall(request, response);
+		return response;
+	}
+
+	public static JCurlResponse put(JCurlRequest request, JCurlCookieManager jCurlCookieManager) {
+		request.setCookieManager(jCurlCookieManager);
+		JCurlResponse response = new JCurlResponse(jCurlCookieManager);
 		request.setMethod(JCurlRequest.PUT);
 		doHttpCall(request, response);
 		return response;
@@ -128,6 +169,12 @@ public class JCurl {
 		return post(request);
 	}
 
+	public static JCurlResponse post(String urlAsString, String payload, JCurlCookieManager jCurlCookieManager) {
+		JCurlRequest request = new JCurlRequest(urlAsString);
+		request.setPayload(payload);
+		return post(request, jCurlCookieManager);
+	}
+
 	/**
 	 * The post request is the type of request a web server does when a html form is submitted.
 	 * 
@@ -137,6 +184,14 @@ public class JCurl {
 	 */
 	public static JCurlResponse post(JCurlRequest request) {
 		JCurlResponse response = new JCurlResponse();
+		request.setMethod(JCurlRequest.POST);
+		doHttpCall(request, response);
+		return response;
+	}
+
+	public static JCurlResponse post(JCurlRequest request, JCurlCookieManager jCurlCookieManager) {
+		request.setCookieManager(jCurlCookieManager);
+		JCurlResponse response = new JCurlResponse(jCurlCookieManager);
 		request.setMethod(JCurlRequest.POST);
 		doHttpCall(request, response);
 		return response;
@@ -155,6 +210,11 @@ public class JCurl {
 		return delete(request);
 	}
 
+	public static JCurlResponse delete(String urlAsString, JCurlCookieManager jCurlCookieManager) {
+		JCurlRequest request = new JCurlRequest(urlAsString);
+		return delete(request, jCurlCookieManager);
+	}
+
 	/**
 	 * The delete request is an important request when dealing with RESTful web services. Beware that this request will
 	 * delete an resource if the request is successful.
@@ -165,6 +225,15 @@ public class JCurl {
 	 */
 	public static JCurlResponse delete(JCurlRequest request) {
 		JCurlResponse response = new JCurlResponse();
+		request.setMethod(JCurlRequest.DELETE);
+		request.setPayload(null);
+		doHttpCall(request, response);
+		return response;
+	}
+
+	public static JCurlResponse delete(JCurlRequest request, JCurlCookieManager jCurlCookieManager) {
+		request.setCookieManager(jCurlCookieManager);
+		JCurlResponse response = new JCurlResponse(jCurlCookieManager);
 		request.setMethod(JCurlRequest.DELETE);
 		request.setPayload(null);
 		doHttpCall(request, response);
@@ -184,6 +253,8 @@ public class JCurl {
 		StringBuffer result = new StringBuffer();
 		URLConnection urlConnection = null;
 		response.setRequestObject(request);
+		
+		request.updateCookies();
 
 		try {
 			urlConnection = (URLConnection) request.getURL().openConnection();

@@ -22,8 +22,13 @@ public class JCurlResponse {
 	private String responseMessage = null;
 	private Map<String, List<String>> headerFields = null;
 	private JCurlRequest requestObject = null;
+	private JCurlCookieManager jCurlCookieManager = null;
 
 	public JCurlResponse() {
+	}
+
+	public JCurlResponse(JCurlCookieManager jCurlCookieManager) {
+		this.jCurlCookieManager = jCurlCookieManager;
 	}
 
 	public void setResponseString(String responseString) {
@@ -37,6 +42,9 @@ public class JCurlResponse {
 	 */
 	public void updateFromUrlConnection(URLConnection urlConnection) {
 		headerFields = urlConnection.getHeaderFields();
+		if (jCurlCookieManager != null) {
+			jCurlCookieManager.updateCookies(this);
+		}
 		if (urlConnection instanceof HttpURLConnection) {
 			try {
 				responseCode = ((HttpURLConnection) urlConnection).getResponseCode();
@@ -44,6 +52,7 @@ public class JCurlResponse {
 			} catch (IOException e) {
 				log.error("An {} occurred when fetching data from HttpURLConnection ({}). The message was: {}",
 						e.getClass(), requestObject.getUrlAsString(), e.getMessage());
+				setResponseCodeAndMessage(408, "Request Timeout");
 			}
 		} else {
 			setResponseCodeAndMessage(200, "OK");

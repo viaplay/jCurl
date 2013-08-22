@@ -1,16 +1,12 @@
 package com.viaplay.jcurl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -28,6 +24,14 @@ import com.viaplay.jcurl.exception.JCurlSocketTimeoutException;
  */
 public class JCurlTest {
 	Logger log = LoggerFactory.getLogger(JCurlTest.class);
+	
+	
+	@Test
+	public void testTempCookie() {
+		JCurlRequest request = new JCurlRequest("http://viaplay.se", JCurlCookieManager.getInstance());
+		JCurlResponse response = JCurl.get(request, JCurlCookieManager.getInstance());
+		log.debug(response.toString());
+	}
 
 	/**
 	 * This test fetch a plain text file from the src/main/resources folder.
@@ -40,7 +44,7 @@ public class JCurlTest {
 		assertContains("item", response);
 		assertEquals(200, response.getResponseCode());
 	}
-
+	
 	/**
 	 * This test shows how to use the JCurl to read a HTML page from a server. To make this happen we must have a web
 	 * server to speak to thus that is created first and destroyed afterwards. Between the special commented lines the
@@ -54,6 +58,36 @@ public class JCurlTest {
 
 		JCurlResponse response = JCurl.get("http://localhost:1962/");
 		log(response);
+
+		// ----------------------------------------------------------------
+		server.stopServer();
+	}
+
+	/**
+	 * This test shows how to use the JCurl to read a HTML page from a server. To make this happen we must have a web
+	 * server to speak to thus that is created first and destroyed afterwards. Between the special commented lines the
+	 * actual code resides.
+	 */
+	@Test
+	public void testGetHTMLFromMicroHttpServerUsingCookieManager() {
+		MicroHTTPServer server = new MicroHTTPServer(1961);
+		server.startServer();
+		// ----------------------------------------------------------------
+
+		JCurlResponse response = JCurl.get("http://localhost:1961/", JCurlCookieManager.getInstance());
+		assertMissing("Cookie=", response.getRequestObject().getProperties().toString());
+		assertMissing("NotYourCookie", response.getRequestObject().getProperties().toString());
+		
+		response = JCurl.get("http://localhost:1961/", JCurlCookieManager.getInstance());
+		assertContains("SimpleCookie", response.getRequestObject().getProperties().toString());
+		assertContains("YourCookie", response.getRequestObject().getProperties().toString());
+		assertContains("NotExpiredCookie", response.getRequestObject().getProperties().toString());
+		assertMissing("OutdatedCookie", response.getRequestObject().getProperties().toString());
+		assertMissing("YourCookieTestCookie", response.getRequestObject().getProperties().toString());
+		
+		response = JCurl.get("http://localhost:1961/cookietest/index.html", JCurlCookieManager.getInstance());
+		assertMissing("OutdatedCookie", response.getRequestObject().getProperties().toString());
+		assertContains("YourCookieTestCookie", response.getRequestObject().getProperties().toString());
 
 		// ----------------------------------------------------------------
 		server.stopServer();
@@ -236,13 +270,15 @@ public class JCurlTest {
 	 */
 	@Test
 	public void testAllExceptionsUsingMicroHttpServer() throws IOException, InterruptedException {
-		MicroHTTPServer server = new MicroHTTPServer(1963);
+		int port = 1991;
+		String urlFormat = "http://localhost:%s%s";
+		MicroHTTPServer server = new MicroHTTPServer(port);
 		server.startServer();
 		JCurlRequest request = new JCurlRequest("");
 		request.setExceptionsToBeThrown(true);
 
 		try {
-			request.setUrlAsString("http://localhost:1963/bad");
+			request.setUrlAsString(String.format(urlFormat, port, "/bad"));
 			JCurl.head(request);
 			fail("Expecting JCurlIOException to be thrown.");
 		} catch (JCurlIOException e) {
@@ -250,7 +286,7 @@ public class JCurlTest {
 			assertContains("IOException", e.getMessage());
 		}
 		try {
-			request.setUrlAsString("http://localhost:1963/authenticate");
+			request.setUrlAsString(String.format(urlFormat, port, "/authenticate"));
 			JCurl.head(request);
 			fail("Expecting JCurlIOException to be thrown.");
 		} catch (Exception e) {
@@ -258,14 +294,14 @@ public class JCurlTest {
 			assertContains(".IOException", e.getMessage());
 		}
 		try {
-			request.setUrlAsString("http://localhost:1963/missing");
+			request.setUrlAsString(String.format(urlFormat, port, "/missing"));
 			JCurl.head(request);
 			fail("Expecting JCurlFileNotFoundException to be thrown.");
 		} catch (JCurlFileNotFoundException e) {
 			assertContains(".FileNotFoundException", e.getMessage());
 		}
 		try {
-			request.setUrlAsString("http://localhost:1963/error");
+			request.setUrlAsString(String.format(urlFormat, port, "/error"));
 			JCurl.head(request);
 			fail("Expecting JCurlIOException to be thrown.");
 		} catch (JCurlIOException e) {
@@ -277,7 +313,7 @@ public class JCurlTest {
 
 		try {
 			request.setTimeOutMillis(200);
-			request.setUrlAsString("http://localhost:1963");
+			request.setUrlAsString(String.format(urlFormat, port, "/"));
 			JCurl.head(request);
 			fail("Expecting JCurlIOException to be thrown.");
 		} catch (JCurlSocketTimeoutException e) {
@@ -301,6 +337,11 @@ public class JCurlTest {
 	private void assertContains(String expected, Object was) {
 		String testWas = (was instanceof String) ? (String) was : was.toString();
 		assertTrue("The expected " + expected + " string is not part of " + testWas, testWas.indexOf(expected) != -1);
+	}
+
+	private void assertMissing(String expected, Object was) {
+		String testWas = (was instanceof String) ? (String) was : was.toString();
+		assertFalse("The expected " + expected + " string is part of " + testWas, testWas.indexOf(expected) != -1);
 	}
 
 }

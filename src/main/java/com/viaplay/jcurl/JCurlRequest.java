@@ -22,11 +22,12 @@ public class JCurlRequest {
 	private String urlAsString = null;
 	private URL url = null;
 	private String method = "GET";
-	private int timeOutMillis = 5000;
+	private int timeOutMillis = 30000;
 	private Map<String, String> properties = null;
 	private String payload = null;
 	private String charsetName = "UTF8";
 	private boolean exceptionsToBeThrown = false;
+	private JCurlCookieManager jCurlCookieManager = null;
 
 	/**
 	 * This constructor instantiates the object with an URL and urlAsString
@@ -37,6 +38,12 @@ public class JCurlRequest {
 	public JCurlRequest(URL url) {
 		this.urlAsString = url.toExternalForm();
 		this.url = url;
+	}
+
+	public JCurlRequest(URL url, JCurlCookieManager jCurlCookieManager) {
+		this.urlAsString = url.toExternalForm();
+		this.url = url;
+		setCookieManager(jCurlCookieManager);
 	}
 
 	/**
@@ -50,6 +57,28 @@ public class JCurlRequest {
 		properties = new HashMap<String, String>();
 		properties.put("Content-Type", "application/json");
 		this.urlAsString = urlAsString;
+	}
+
+	public JCurlRequest(String urlAsString, JCurlCookieManager jCurlCookieManager) {
+		properties = new HashMap<String, String>();
+		properties.put("Content-Type", "application/json");
+		this.urlAsString = urlAsString;
+		setCookieManager(jCurlCookieManager);
+	}
+	
+	public void setCookieManager(JCurlCookieManager jCurlCookieManager) {
+		if (jCurlCookieManager != null) {
+			this.jCurlCookieManager = jCurlCookieManager;
+		}
+	}
+	
+	/**
+	 * This method fetches appropriate cookies from the cookie manager and stores them as properties.
+	 */
+	public void updateCookies() {
+		if (jCurlCookieManager != null) {
+			jCurlCookieManager.updateCookies(this);
+		}
 	}
 
 	/**
