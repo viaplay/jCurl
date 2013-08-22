@@ -53,4 +53,12 @@ To be reusable it also checks if the database exists in the beginning and delete
 					String.format("{\"time\":\"%s\", \"no\":%s}", dateString, i));
 		}
 
-	
+
+### Take advantage of server cookies in subsequent requests
+
+The latest addition to the JCurl project is the JCurlCookieManager which retrieves all cookies from the responses and adds the the valid ones to the request.
+
+	JCurl.get("some.url", JCurlCookieManager.getInstance());
+	JCurl.get("some.url/here?we=need&cookies", JCurlCookieManager.getInstance());
+
+
