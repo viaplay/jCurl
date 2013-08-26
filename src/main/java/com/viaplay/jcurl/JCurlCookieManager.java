@@ -2,6 +2,7 @@ package com.viaplay.jcurl;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -24,7 +25,7 @@ import org.slf4j.LoggerFactory;
  */
 public class JCurlCookieManager {
 	Logger log = LoggerFactory.getLogger(JCurlCookieManager.class);
-	
+
 	private static final String SET_COOKIE = "Set-Cookie";
 
 	private static final String cookieExpire = "Expires";
@@ -32,17 +33,31 @@ public class JCurlCookieManager {
 	private static final String cookiePath = "Path";
 	private static final String cookieSecure = "Secure";
 
-	private static JCurlCookieManager jCurlCookieManagerInstance = null;
+	private static Map<String, JCurlCookieManager> jCurlCookieManagerInstanceMap = null;
 	private Map<String, Cookie> cookieMap = null;
 
 	/**
-	 * This method assures that only one instance of this manager is created.
+	 * This instance getter returns the default cookie manager.
 	 * 
-	 * @return The one and only JCurlCookieManager object.
+	 * @return The default cookie manager.
 	 */
 	public static JCurlCookieManager getInstance() {
+		return getInstance("xzre34_sIngLetOn");
+	}
+
+	/**
+	 * This method assures that the same instance of this manager is created and then reused.
+	 * 
+	 * @return The JCurlCookieManager object that match the instanceId.
+	 */
+	public static JCurlCookieManager getInstance(String instanceId) {
+		if (jCurlCookieManagerInstanceMap == null) {
+			jCurlCookieManagerInstanceMap = Collections.synchronizedMap(new HashMap<String, JCurlCookieManager>());
+		}
+		JCurlCookieManager jCurlCookieManagerInstance = jCurlCookieManagerInstanceMap.get(instanceId);
 		if (jCurlCookieManagerInstance == null) {
 			jCurlCookieManagerInstance = new JCurlCookieManager();
+			jCurlCookieManagerInstanceMap.put(instanceId, jCurlCookieManagerInstance);
 		}
 		return jCurlCookieManagerInstance;
 	}
@@ -156,6 +171,13 @@ public class JCurlCookieManager {
 		if (!"".equals(cookies)) {
 			jCurlRequest.getProperties().put("Cookie", cookies);
 		}
+	}
+
+	/**
+	 * Reset the contents of this cookie manager.
+	 */
+	public void reset() {
+		cookieMap = null;
 	}
 
 }
