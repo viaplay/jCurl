@@ -321,6 +321,33 @@ public class JCurlTest {
 		}
 		log.info("Test has ended!");
 	}
+	
+	@Test
+	public void testCouchDBPutPostGetDeleteTest() {
+		JCurlResponse response;
+		String JavaVMServerUrl = System.getProperty("serverUrl");
+		String serverUrl = JavaVMServerUrl!=null ? JavaVMServerUrl : "http://username:password@localhost:5984";
+		String databaseName = "/unique_jcurltestdb_should_not_remain";
+		response = JCurl.put(serverUrl+databaseName, "{}");
+		if (response.getResponseCode() == 201) {
+			try {
+				JCurl.post(serverUrl+databaseName, "{\"tjosan\": \"hejsan\"}");
+				String payLoad = JCurl.get(serverUrl+databaseName + "/_all_docs?include_docs=true").toString();
+				assertContains("total_rows\":1", payLoad);
+				assertContains("tjosan", payLoad);
+				assertContains("hejsan", payLoad);
+				JCurl.put(serverUrl+databaseName + "/tjena", "{\"tjosan\": \"hejsan\"}");
+				payLoad = JCurl.get(serverUrl+databaseName + "/tjena").toString();
+				assertContains("tjena", payLoad);
+				assertContains("tjosan", payLoad);
+				assertContains("hejsan", payLoad);
+			} finally {
+				JCurl.delete(serverUrl+databaseName);
+			}
+		} else {
+			log.error("The database {} may already exist at {}. Error and code: {}", databaseName, serverUrl, response.getResponseCodeAndMessage());
+		}
+	}
 
 	/* Helper methods below this line */
 
