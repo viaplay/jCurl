@@ -328,7 +328,7 @@ public class JCurlTest {
 		String JavaVMServerUrl = System.getProperty("serverUrl");
 		String serverUrl = JavaVMServerUrl!=null ? JavaVMServerUrl : "http://username:password@localhost:5984";
 		String databaseName = "/unique_jcurltestdb_should_not_remain";
-		response = JCurl.put(serverUrl+databaseName, "{}");
+		response = JCurl.put(serverUrl+databaseName, null);
 		if (response.getResponseCode() == 201) {
 			try {
 				JCurl.post(serverUrl+databaseName, "{\"tjosan\": \"hejsan\"}");
