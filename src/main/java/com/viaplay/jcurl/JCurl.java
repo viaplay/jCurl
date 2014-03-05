@@ -278,7 +278,7 @@ public class JCurl {
 			if (request.hasPayload()) {
 				urlConnection.setDoOutput(true);
 				urlConnection.setRequestProperty("Content-Length",
-						"" + request.getPayload().getBytes(request.getCharsetName()));
+						"" + request.getPayload().getBytes(request.getCharsetName()).length);
 
 				OutputStreamWriter outputStreamWriter = new OutputStreamWriter(urlConnection.getOutputStream(),
 						request.getCharsetName());
