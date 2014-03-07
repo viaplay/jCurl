@@ -58,7 +58,6 @@ public class JCurl {
 	public static JCurlResponse head(JCurlRequest request) {
 		JCurlResponse response = new JCurlResponse();
 		request.setMethod(JCurlRequest.HEAD);
-		request.setPayload(null);
 		doHttpCall(request, response);
 		return response;
 	}
@@ -67,7 +66,6 @@ public class JCurl {
 		request.setCookieManager(jCurlCookieManager);
 		JCurlResponse response = new JCurlResponse(jCurlCookieManager);
 		request.setMethod(JCurlRequest.HEAD);
-		request.setPayload(null);
 		doHttpCall(request, response);
 		return response;
 	}
@@ -100,7 +98,6 @@ public class JCurl {
 	 */
 	public static JCurlResponse get(JCurlRequest request) {
 		JCurlResponse response = new JCurlResponse();
-		request.setPayload(null);
 		doHttpCall(request, response);
 		return response;
 	}
@@ -108,7 +105,6 @@ public class JCurl {
 	public static JCurlResponse get(JCurlRequest request, JCurlCookieManager jCurlCookieManager) {
 		request.setCookieManager(jCurlCookieManager);
 		JCurlResponse response = new JCurlResponse(jCurlCookieManager);
-		request.setPayload(null);
 		doHttpCall(request, response);
 		return response;
 	}
@@ -226,7 +222,6 @@ public class JCurl {
 	public static JCurlResponse delete(JCurlRequest request) {
 		JCurlResponse response = new JCurlResponse();
 		request.setMethod(JCurlRequest.DELETE);
-		request.setPayload(null);
 		doHttpCall(request, response);
 		return response;
 	}
@@ -235,7 +230,6 @@ public class JCurl {
 		request.setCookieManager(jCurlCookieManager);
 		JCurlResponse response = new JCurlResponse(jCurlCookieManager);
 		request.setMethod(JCurlRequest.DELETE);
-		request.setPayload(null);
 		doHttpCall(request, response);
 		return response;
 	}
