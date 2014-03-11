@@ -348,6 +348,16 @@ public class JCurlTest {
 			log.error("The database {} may already exist at {}. Error and code: {}", databaseName, serverUrl, response.getResponseCodeAndMessage());
 		}
 	}
+	
+	@Test
+	public void testDeleteWithPayload() {
+		JCurlRequest request = new JCurlRequest("http://viadevice.viaplay.tv/api/devices/deviceId/0123923323423244"); 
+		request.setPayload("token=a24ae27cd619082e9fed81770d31e337b867bb37ac348e01fbf8e853cc4fd83b&userId=66CDBA8DA916D518");
+		request.getProperties().clear();
+		request.getProperties().put("Content-Type", "x-www-form-urlencoded");
+		JCurlResponse response = JCurl.delete(request);
+		System.out.format("The response is '%s'", response.toString());
+	}
 
 	/* Helper methods below this line */
 
