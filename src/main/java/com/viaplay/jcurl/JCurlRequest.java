@@ -55,13 +55,13 @@ public class JCurlRequest {
 	 */
 	public JCurlRequest(String urlAsString) {
 		properties = new HashMap<String, String>();
-		properties.put("Content-Type", "application/json");
+		properties.put("Content-Type", "application/json; charset=utf-8");
 		this.urlAsString = urlAsString;
 	}
 
 	public JCurlRequest(String urlAsString, JCurlCookieManager jCurlCookieManager) {
 		properties = new HashMap<String, String>();
-		properties.put("Content-Type", "application/json");
+		properties.put("Content-Type", "application/json; charset=utf-8");
 		this.urlAsString = urlAsString;
 		setCookieManager(jCurlCookieManager);
 	}
