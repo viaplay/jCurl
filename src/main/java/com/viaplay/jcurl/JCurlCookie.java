@@ -17,7 +17,7 @@ import java.util.TimeZone;
  */
 public class JCurlCookie {
     private static final Logger log = LoggerFactory.getLogger(JCurlCookie.class);
-    private static final String EXTERNAL_FORMAT = "[name=%s, domain=%s, path=%s, expiryDate=%s, http=%s, secure=%s, value=%s]";
+    private static final String EXTERNAL_FORMAT = "%s=%s";
     private static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
 
     private String name;
@@ -227,7 +227,7 @@ public class JCurlCookie {
     }
 
     public String toExternalForm() {
-        return String.format(EXTERNAL_FORMAT, name, domain, path, JCurlCookie.formatDate(expiryDate), isHttp, isSecure, value);
+        return String.format(EXTERNAL_FORMAT, name, value);
     }
 
     public int compare(Object o1, Object o2) {
