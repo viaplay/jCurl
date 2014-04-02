@@ -20,8 +20,6 @@ import org.slf4j.LoggerFactory;
 public class JCurlCookieManager {
 	Logger log = LoggerFactory.getLogger(JCurlCookieManager.class);
 
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
-
 	private static final String SET_COOKIE = "Set-Cookie";
 
 	private static final String cookieExpire = "Expires";
@@ -125,7 +123,7 @@ public class JCurlCookieManager {
 				}
 				if (cookieExpire.equalsIgnoreCase(name)) {
                     try {
-                        expires = DATE_FORMAT.parse(value);
+                        expires = JCurlCookie.parseDate(value);
                     } catch (ParseException e) {
 						log.warn("The cookie expires value [{}] was not parsable.", value);
                     }
