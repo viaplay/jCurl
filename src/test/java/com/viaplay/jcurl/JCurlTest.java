@@ -359,6 +359,7 @@ public class JCurlTest {
 		System.out.format("The response is '%s'", response.toString());
 	}
 
+
 	/* Helper methods below this line */
 
 	private void assertHTTP(JCurlResponse response, int responseCode) {
