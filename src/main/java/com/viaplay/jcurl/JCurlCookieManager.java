@@ -2,16 +2,10 @@ package com.viaplay.jcurl;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
-import org.apache.commons.httpclient.Cookie;
-import org.apache.commons.httpclient.util.DateParseException;
-import org.apache.commons.httpclient.util.DateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +20,8 @@ import org.slf4j.LoggerFactory;
 public class JCurlCookieManager {
 	Logger log = LoggerFactory.getLogger(JCurlCookieManager.class);
 
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
+
 	private static final String SET_COOKIE = "Set-Cookie";
 
 	private static final String cookieExpire = "Expires";
@@ -34,7 +30,7 @@ public class JCurlCookieManager {
 	private static final String cookieSecure = "Secure";
 
 	private static Map<String, JCurlCookieManager> jCurlCookieManagerInstanceMap = null;
-	private Map<String, Cookie> cookieMap = null;
+	private Map<String, JCurlCookie> cookieMap = null;
 
 	/**
 	 * This instance getter returns the default cookie manager.
@@ -67,9 +63,9 @@ public class JCurlCookieManager {
 	 * 
 	 * @return The instantiated Map object.
 	 */
-	public Map<String, Cookie> getCookieMap() {
+	public Map<String, JCurlCookie> getCookieMap() {
 		if (cookieMap == null) {
-			cookieMap = new HashMap<String, Cookie>();
+			cookieMap = new HashMap<String, JCurlCookie>();
 		}
 		return cookieMap;
 	}
@@ -86,7 +82,7 @@ public class JCurlCookieManager {
 			if (SET_COOKIE.equals(key)) {
 				List<String> stringList = jCurlResponse.getHeaderFields().get(key);
 				for (String string : stringList) {
-					Cookie cookie = createCookie(string);
+					JCurlCookie cookie = createCookie(string);
 					getCookieMap().put(cookie.getName(), cookie);
 				}
 			}
@@ -100,8 +96,8 @@ public class JCurlCookieManager {
 	 *            The value of the Set-Cookie header property.
 	 * @return a cookie.
 	 */
-	private Cookie createCookie(String cookieString) {
-		Cookie cookie = null;
+	private JCurlCookie createCookie(String cookieString) {
+		JCurlCookie cookie = null;
 		String[] cookieValueArray = cookieString.split(";");
 		String name = null;
 		String value = null;
@@ -110,6 +106,7 @@ public class JCurlCookieManager {
 		String cookieValue = "";
 		Date expires = null;
 		String path = null;
+        boolean http = false;
 		boolean secure = false;
 		for (int i = 0; i < cookieValueArray.length; i++) {
 			String nameValueString = cookieValueArray[i];
@@ -127,18 +124,18 @@ public class JCurlCookieManager {
 					path = "".equals(value) ? null : value;
 				}
 				if (cookieExpire.equalsIgnoreCase(name)) {
-					try {
-						expires = DateUtil.parseDate(value);
-					} catch (DateParseException e) {
+                    try {
+                        expires = DATE_FORMAT.parse(value);
+                    } catch (ParseException e) {
 						log.warn("The cookie expires value [{}] was not parsable.", value);
-					}
+                    }
 				}
 				if (cookieSecure.equalsIgnoreCase(name)) {
 					secure = true;
 				}
 			}
 		}
-		cookie = new Cookie(domain, cookieName, cookieValue, path, expires, secure);
+		cookie = new JCurlCookie(domain, cookieName, cookieValue, path, expires, http, secure);
 		return cookie;
 	}
 
@@ -151,7 +148,7 @@ public class JCurlCookieManager {
 	public void updateCookies(JCurlRequest jCurlRequest) {
 		String cookies = "";
 		for (String key : getCookieMap().keySet()) {
-			Cookie cookie = getCookieMap().get(key);
+			JCurlCookie cookie = getCookieMap().get(key);
 			if (!cookie.isExpired()) {
 				if (cookie.getDomain() != null) {
 					try {

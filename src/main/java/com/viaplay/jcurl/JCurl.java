@@ -254,7 +254,11 @@ public class JCurl {
 			urlConnection = (URLConnection) request.getURL().openConnection();
 			urlConnection.setDoInput(true);
 			if (urlConnection instanceof HttpURLConnection) {
-				((HttpURLConnection) urlConnection).setRequestMethod(request.getMethod());
+				if (request.getMethod().equals(JCurlRequest.DELETE)) {
+					((HttpURLConnection) urlConnection).setRequestMethod(JCurlRequest.POST);
+				} else {
+					((HttpURLConnection) urlConnection).setRequestMethod(request.getMethod());
+				}
 			}
 			urlConnection.setConnectTimeout(request.getTimeOutMillis());
 			urlConnection.setReadTimeout(request.getTimeOutMillis());
@@ -270,6 +274,9 @@ public class JCurl {
 			}
 
 			if (request.hasPayload()) {
+				if (request.getMethod().equals(JCurlRequest.DELETE)) {
+					urlConnection.setRequestProperty("X-HTTP-Method-Override", "DELETE");
+				}
 				urlConnection.setDoOutput(true);
 				urlConnection.setRequestProperty("Content-Length",
 						"" + request.getPayload().getBytes(request.getCharsetName()).length);
@@ -277,6 +284,7 @@ public class JCurl {
 				OutputStreamWriter outputStreamWriter = new OutputStreamWriter(urlConnection.getOutputStream(),
 						request.getCharsetName());
 				outputStreamWriter.write(request.getPayload());
+				outputStreamWriter.flush();
 				outputStreamWriter.close();
 			}
 
