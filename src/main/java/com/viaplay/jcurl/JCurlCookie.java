@@ -3,7 +3,11 @@ package com.viaplay.jcurl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 
 /**
  * Simple cookie object created to reduce external dependencies.
@@ -14,6 +18,7 @@ import java.util.Date;
 public class JCurlCookie {
     private static final Logger log = LoggerFactory.getLogger(JCurlCookie.class);
     private static final String EXTERNAL_FORMAT = "[name=%s, domain=%s, path=%s, expiryDate=%s, http=%s, secure=%s, value=%s]";
+    private static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
 
     private String name;
 
@@ -109,6 +114,17 @@ public class JCurlCookie {
 
     public void setExpiryDate (Date expiryDate) {
         this.expiryDate = expiryDate;
+    }
+
+    static public String formatDate(Date date) {
+        if (date == null) return null;
+        DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("GMT"));
+        return DATE_FORMAT.format(date);
+
+    }
+
+    static public Date parseDate(String dateAsGMTString) throws ParseException {
+        return DATE_FORMAT.parse(dateAsGMTString);
     }
 
     public boolean isPersistent() {
@@ -211,7 +227,7 @@ public class JCurlCookie {
     }
 
     public String toExternalForm() {
-        return String.format(EXTERNAL_FORMAT, name, domain, path, expiryDate, isHttp, isSecure, value);
+        return String.format(EXTERNAL_FORMAT, name, domain, path, JCurlCookie.formatDate(expiryDate), isHttp, isSecure, value);
     }
 
     public int compare(Object o1, Object o2) {

@@ -12,7 +12,6 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.httpclient.util.DateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -294,8 +293,8 @@ public class MicroHTTPServer implements Runnable {
 		out.write(String.format("Content-Type: %s\r\n", contentType));
 		out.write(String.format("Content-Length: %s\r\n", page.length()));
 		out.write(String.format("Set-Cookie: %s\r\n", "SimpleCookie=SimpleCookieValue"));
-		out.write(String.format("Set-Cookie: NotExpiredCookie=NotExpiredCookieValue; Expires=%s; \r\n", DateUtil.formatDate(tomorrow.getTime())));
-		out.write(String.format("Set-Cookie: OutdatedCookie=OutdatedCookieValue; Expires=%s; \r\n", DateUtil.formatDate(yesterday.getTime())));
+		out.write(String.format("Set-Cookie: NotExpiredCookie=NotExpiredCookieValue; Expires=%s; \r\n", JCurlCookie.formatDate(tomorrow.getTime())));
+		out.write(String.format("Set-Cookie: OutdatedCookie=OutdatedCookieValue; Expires=%s; \r\n", JCurlCookie.formatDate(yesterday.getTime())));
 		out.write(String.format("Set-Cookie: YourCookie=YourCookieValue; Path=%s; Domain=%s;\r\n", "/", "localhost"));
 		out.write(String.format("Set-Cookie: YourCookieTestCookie=YourCookieTestCookieValue; Path=%s; Domain=%s;\r\n", "/cookietest/", "localhost"));
 		out.write(String.format("Set-Cookie: NotYourCookie=NotYourCookieValue; Path=/; Domain=.yourdomain.not;\r\n"));
