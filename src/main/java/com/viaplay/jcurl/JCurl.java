@@ -12,6 +12,7 @@ import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URLConnection;
 
+import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +20,6 @@ import com.viaplay.jcurl.exception.JCurlFileNotFoundException;
 import com.viaplay.jcurl.exception.JCurlIOException;
 import com.viaplay.jcurl.exception.JCurlMalformedURLException;
 import com.viaplay.jcurl.exception.JCurlSocketTimeoutException;
-import sun.misc.BASE64Encoder;
 
 /**
  * JCurl is a simple yet powerful resource getter that works very much like the curl command line tool we all have used
@@ -265,7 +265,7 @@ public class JCurl {
 
 			if (request.getURL().getUserInfo() != null) {
 				String basicAuth = "Basic "
-						+ new String(new BASE64Encoder().encode(request.getURL().getUserInfo().getBytes()));
+						+ new String(new Base64().encode(request.getURL().getUserInfo().getBytes()));
 				urlConnection.setRequestProperty("Authorization", basicAuth);
 			}
 			urlConnection.setRequestProperty("Content-Length", "0");
