@@ -254,7 +254,7 @@ public class JCurl {
 			urlConnection = (URLConnection) request.getURL().openConnection();
 			urlConnection.setDoInput(true);
 			if (urlConnection instanceof HttpURLConnection) {
-				if (request.getMethod().equals(JCurlRequest.DELETE)) {
+				if (request.hasPayload() && request.getMethod().equals(JCurlRequest.DELETE)) {
 					((HttpURLConnection) urlConnection).setRequestMethod(JCurlRequest.POST);
 				} else {
 					((HttpURLConnection) urlConnection).setRequestMethod(request.getMethod());
