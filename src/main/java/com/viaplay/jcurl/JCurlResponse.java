@@ -27,6 +27,10 @@ public class JCurlResponse {
 	public JCurlResponse() {
 	}
 
+	public JCurlResponse(JCurlRequest request) {
+		this.jCurlCookieManager = request.getCookieManager();
+	}
+
 	public JCurlResponse(JCurlCookieManager jCurlCookieManager) {
 		this.jCurlCookieManager = jCurlCookieManager;
 	}

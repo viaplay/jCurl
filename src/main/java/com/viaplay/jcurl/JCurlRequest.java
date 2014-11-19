@@ -65,6 +65,10 @@ public class JCurlRequest {
 		this.urlAsString = urlAsString;
 		setCookieManager(jCurlCookieManager);
 	}
+
+	protected JCurlCookieManager getCookieManager() {
+		return this.jCurlCookieManager;
+	}
 	
 	public void setCookieManager(JCurlCookieManager jCurlCookieManager) {
 		if (jCurlCookieManager != null) {

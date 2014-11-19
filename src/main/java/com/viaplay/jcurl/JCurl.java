@@ -97,7 +97,7 @@ public class JCurl {
 	 * @return a filled in JCurlResponse object.
 	 */
 	public static JCurlResponse get(JCurlRequest request) {
-		JCurlResponse response = new JCurlResponse();
+		JCurlResponse response = new JCurlResponse(request);
 		doHttpCall(request, response);
 		return response;
 	}
@@ -137,7 +137,7 @@ public class JCurl {
 	 * @return a filled in JCurlResponse object.
 	 */
 	public static JCurlResponse put(JCurlRequest request) {
-		JCurlResponse response = new JCurlResponse();
+		JCurlResponse response = new JCurlResponse(request);
 		request.setMethod(JCurlRequest.PUT);
 		doHttpCall(request, response);
 		return response;
@@ -179,7 +179,7 @@ public class JCurl {
 	 * @return a filled in JCurlResponse object.
 	 */
 	public static JCurlResponse post(JCurlRequest request) {
-		JCurlResponse response = new JCurlResponse();
+		JCurlResponse response = new JCurlResponse(request);
 		request.setMethod(JCurlRequest.POST);
 		doHttpCall(request, response);
 		return response;
@@ -220,7 +220,7 @@ public class JCurl {
 	 * @return a filled in JCurlResponse object.
 	 */
 	public static JCurlResponse delete(JCurlRequest request) {
-		JCurlResponse response = new JCurlResponse();
+		JCurlResponse response = new JCurlResponse(request);
 		request.setMethod(JCurlRequest.DELETE);
 		doHttpCall(request, response);
 		return response;
